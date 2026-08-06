@@ -1,6 +1,6 @@
 {
   "name": "vue-atproto-login",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "atproto / Bluesky OAuth sign-in for Vue 3 — a composable, a component and a handle typeahead.",
   "type": "module",
   "license": "MIT",
