@@ -351,22 +351,23 @@ pnpm example     # playground at http://localhost:5180
 One command:
 
 ```bash
-pnpm version patch    # or minor / major
+pnpm release            # patch
+pnpm release minor      # or major, or an explicit 1.0.0-rc.1
 ```
 
-That runs `pnpm verify`, bumps `package.json`, commits, tags `vX.Y.Z`, and pushes the tag
-(`postversion`). The tag triggers `.github/workflows/publish.yml`, which re-runs the same
-verification, publishes to npm, and opens a GitHub Release with generated notes.
+It refuses to start unless you are on `main`, the tree is clean, you are level with
+`origin/main`, and `gh` is authenticated — each of those otherwise produces a release that
+looks fine and is wrong. Then it runs `pnpm verify`, bumps, commits, tags `vX.Y.Z`, pushes
+to every mirror, makes sure the publish workflow is running, and waits for it, ending on
+the npm URL or the failing log.
 
-> **Push triggers are currently not firing on this repository.** GitHub records the
-> PushEvent and starts no run — `workflow_dispatch` works, `push` does not. Until that
-> resolves, finish the release by hand:
->
-> ```bash
-> gh workflow run publish.yml -f tag=v0.1.0
-> ```
->
-> Same job, same OIDC publish, just started manually against the tag `pnpm version` created.
+The publish itself happens in CI, never on your machine. `.github/workflows/publish.yml`
+re-runs the full verification, checks the tag against `package.json`, and publishes.
+
+> Tag pushes on this repository do not currently start workflow runs — GitHub records the
+> PushEvent and spawns nothing, while `workflow_dispatch` works. The release script handles
+> this: it waits for a tag-triggered run, and dispatches one only if none appeared. If push
+> triggers start working again it will notice, and will not publish twice.
 
 There is **no npm token** in the repository or in GitHub secrets. Publishing uses
 [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/): GitHub hands the
@@ -401,6 +402,21 @@ Two things that will bite if changed carelessly: renaming `publish.yml` breaks t
 relationship until the npm setting is updated to match, and a tag that disagrees with
 `package.json` is rejected by the workflow rather than published (npm has no undo past
 72 hours).
+
+### Why not release-it / semantic-release / changesets
+
+They all fit, and any of them would work. They are also built for problems this repository
+does not have: `changesets` coordinates versions across a monorepo and collects
+contributor-written notes; `semantic-release` derives versions from commit history for
+teams who want releases to need no decision; `release-it` is the closest fit and mostly
+wraps the same six git commands.
+
+What is actually specific here — the broken push trigger, three push mirrors, publishing
+through OIDC rather than a token — is the part none of them handle out of the box, and
+would need config and hooks anyway. So `scripts/release.mjs` is ~100 lines of plain Node
+with no dependencies, and it does exactly this repository's release. Reach for one of the
+packages when there are several packages to version together, or several people writing
+changelog entries.
 
 ## Where this lives
 

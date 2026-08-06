@@ -49,6 +49,7 @@
     "types": "vue-tsc --noEmit -p tsconfig.json",
     "example": "vite --config example/vite.config.ts",
     "verify": "pnpm types && pnpm test && pnpm build",
+    "release": "node scripts/release.mjs",
     "preversion": "pnpm verify",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "pnpm build"
