@@ -402,6 +402,12 @@ relationship until the npm setting is updated to match, and a tag that disagrees
 `package.json` is rejected by the workflow rather than published (npm has no undo past
 72 hours).
 
+## Where this lives
+
+- [github.com/jcalixte/vue-atproto-login](https://github.com/jcalixte/vue-atproto-login) — issues, CI, releases
+- [tangled.org/apoena.dev/vue-atproto-login](https://tangled.org/apoena.dev/vue-atproto-login) — mirror, on atproto, which feels right for this one
+- [git.apoena.dev/julien/vue-atproto-login](https://git.apoena.dev/julien/vue-atproto-login) — mirror
+
 ## License
 
 MIT
