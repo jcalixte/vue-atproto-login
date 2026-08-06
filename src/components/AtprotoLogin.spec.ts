@@ -37,6 +37,15 @@ const setup = (overrides: Partial<AtprotoLoginOptions> = {}) =>
     ...overrides,
   })
 
+// The typeahead debounces before it searches. These mounts pass `debounce: 0`, so
+// waiting one macrotask is enough — no fake clock, which Vue's event-timestamp
+// guard does not survive.
+const typeAndDebounce = async (wrapper: ReturnType<typeof mount>, value: string) => {
+  await wrapper.find("input").setValue(value)
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await flushPromises()
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   resetAtprotoLogin()
@@ -145,12 +154,10 @@ describe("<AtprotoLogin>", () => {
 
   it("blanks every hook under unstyled, including the suggestion internals", async () => {
     setup()
-    const wrapper = mount(AtprotoLogin, { props: { unstyled: true } })
+    const wrapper = mount(AtprotoLogin, { props: { unstyled: true, debounce: 0 } })
     await flushPromises()
 
-    await wrapper.find("input").setValue("bo")
-    await new Promise((resolve) => setTimeout(resolve, 220))
-    await flushPromises()
+    await typeAndDebounce(wrapper, "bo")
 
     // ids stay — they wire the combobox to its listbox for screen readers.
     // No class anywhere should carry a default hook.
@@ -160,29 +167,26 @@ describe("<AtprotoLogin>", () => {
 
   it("suggests handles as you type and signs in with the one picked", async () => {
     setup()
-    const wrapper = mount(AtprotoLogin)
+    const wrapper = mount(AtprotoLogin, { props: { debounce: 0 } })
     await flushPromises()
 
-    await wrapper.find("input").setValue("bo")
-    await new Promise((resolve) => setTimeout(resolve, 220))
-    await flushPromises()
+    await typeAndDebounce(wrapper, "bo")
 
     const rows = wrapper.findAll('[role="option"]')
     expect(rows).toHaveLength(1)
     expect(rows[0].text()).toContain("bob.bsky.social")
 
     await rows[0].trigger("mousedown")
+    await flushPromises()
     expect(signInRedirect).toHaveBeenCalledWith("bob.bsky.social", undefined)
   })
 
   it("never opens the list when suggestions are off", async () => {
     setup()
-    const wrapper = mount(AtprotoLogin, { props: { suggestions: false } })
+    const wrapper = mount(AtprotoLogin, { props: { suggestions: false, debounce: 0 } })
     await flushPromises()
 
-    await wrapper.find("input").setValue("bo")
-    await new Promise((resolve) => setTimeout(resolve, 220))
-    await flushPromises()
+    await typeAndDebounce(wrapper, "bo")
 
     expect(wrapper.find('[role="listbox"]').exists()).toBe(false)
   })

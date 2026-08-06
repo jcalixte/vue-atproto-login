@@ -176,6 +176,7 @@ who is already signed in.
   :with-avatar="true"
   :with-logo="true"
   :suggestions="true"
+  :debounce="180"
   placeholder="alice.bsky.social"
   sign-in-label="Sign in with"
   @error="onError"

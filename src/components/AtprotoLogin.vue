@@ -19,6 +19,8 @@ const props = withDefaults(
     withLogo?: boolean
     /** Turn the typeahead off and behave as a plain text field. */
     suggestions?: boolean
+    /** How long the typeahead waits after a keystroke before it searches, in ms. */
+    debounce?: number
     placeholder?: string
     signInLabel?: string
     redirectingLabel?: string
@@ -31,6 +33,7 @@ const props = withDefaults(
     withAvatar: true,
     withLogo: true,
     suggestions: true,
+    debounce: 180,
     placeholder: "alice.bsky.social",
     signInLabel: "Sign in with",
     redirectingLabel: "Redirecting…",
@@ -138,6 +141,7 @@ const onSignOut = async () => {
         :placeholder="placeholder"
         :disabled="redirecting"
         :suggestions="suggestions"
+        :debounce="debounce"
         :ui="ui"
         :unstyled="unstyled"
         @submit="onSubmit"
