@@ -358,6 +358,16 @@ That runs `pnpm verify`, bumps `package.json`, commits, tags `vX.Y.Z`, and pushe
 (`postversion`). The tag triggers `.github/workflows/publish.yml`, which re-runs the same
 verification, publishes to npm, and opens a GitHub Release with generated notes.
 
+> **Push triggers are currently not firing on this repository.** GitHub records the
+> PushEvent and starts no run — `workflow_dispatch` works, `push` does not. Until that
+> resolves, finish the release by hand:
+>
+> ```bash
+> gh workflow run publish.yml -f tag=v0.1.0
+> ```
+>
+> Same job, same OIDC publish, just started manually against the tag `pnpm version` created.
+
 There is **no npm token** in the repository or in GitHub secrets. Publishing uses
 [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/): GitHub hands the
 workflow a short-lived OIDC token, npm swaps it for a one-shot publish credential, and the

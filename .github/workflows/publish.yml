@@ -10,6 +10,15 @@ name: Publish
 on:
   push:
     tags: ["v*"]
+  # Manual fallback. Tag pushes on this repo are currently not spawning runs —
+  # GitHub records the PushEvent and starts nothing — so a release can also be
+  # kicked off by hand against an existing tag:
+  #   gh workflow run publish.yml -f tag=v0.1.0
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The existing tag to publish, e.g. v0.1.0
+        required: true
 
 permissions:
   contents: write # for the GitHub Release
@@ -18,8 +27,13 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      # One name for the tag whichever way the job was started.
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: pnpm/action-setup@v4
 
@@ -39,7 +53,7 @@ jobs:
       # for, and npm has no undo past 72 hours. Fail before that happens.
       - name: Check the tag matches package.json
         run: |
-          tagged="${GITHUB_REF_NAME#v}"
+          tagged="${TAG#v}"
           packaged="$(node -p "require('./package.json').version")"
           if [ "$tagged" != "$packaged" ]; then
             echo "tag v$tagged does not match package.json $packaged" >&2
@@ -52,6 +66,6 @@ jobs:
       # unreliable (pnpm/pnpm#11513). pnpm builds, npm ships.
       - run: npm publish --provenance --access public
 
-      - run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+      - run: gh release create "$TAG" --generate-notes --verify-tag
         env:
           GH_TOKEN: ${{ github.token }}
