@@ -342,8 +342,55 @@ pnpm install
 pnpm test        # vitest
 pnpm types       # vue-tsc
 pnpm build       # vite lib build + d.ts
+pnpm verify      # all three, the same gate CI and the release run
 pnpm example     # playground at http://localhost:5180
 ```
+
+## Releasing
+
+One command:
+
+```bash
+pnpm version patch    # or minor / major
+```
+
+That runs `pnpm verify`, bumps `package.json`, commits, tags `vX.Y.Z`, and pushes the tag
+(`postversion`). The tag triggers `.github/workflows/publish.yml`, which re-runs the same
+verification, publishes to npm, and opens a GitHub Release with generated notes.
+
+There is **no npm token** in the repository or in GitHub secrets. Publishing uses
+[npm trusted publishing](https://docs.npmjs.com/trusted-publishers/): GitHub hands the
+workflow a short-lived OIDC token, npm swaps it for a one-shot publish credential, and the
+package gets a provenance attestation showing which commit and workflow built it. That is
+why the workflow asks for `id-token: write`, and why nothing needs rotating.
+
+### One-time setup
+
+Trusted publishing is configured per package on npmjs.com, and that page only exists once
+the package does. So the first release is manual:
+
+```bash
+npm login
+pnpm verify
+npm publish --access public    # 0.1.0, no provenance — there is no CI to attest to it
+```
+
+Then at `https://www.npmjs.com/package/vue-atproto-login/access`, add a trusted publisher:
+
+| field | value |
+|---|---|
+| Provider | GitHub Actions |
+| Organization / user | `jcalixte` |
+| Repository | `vue-atproto-login` |
+| Workflow filename | `publish.yml` |
+| Environment | *(leave empty)* |
+
+Every release after that is just `pnpm version patch`.
+
+Two things that will bite if changed carelessly: renaming `publish.yml` breaks the trust
+relationship until the npm setting is updated to match, and a tag that disagrees with
+`package.json` is rejected by the workflow rather than published (npm has no undo past
+72 hours).
 
 ## License
 

@@ -1,0 +1,57 @@
+# Publishing runs on a tag, with no npm token anywhere.
+#
+# npm trusted publishing swaps GitHub's short-lived OIDC token for a one-shot
+# publish credential, which is why `id-token: write` is the only secret-like
+# thing here. The trust is pinned to this repository AND to this filename, so
+# renaming this file breaks publishing until the setting on npmjs.com is updated
+# to match.
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # for the GitHub Release
+  id-token: write # for npm trusted publishing (OIDC)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      # Trusted publishing needs npm >= 11.5.1, which is newer than the npm
+      # bundled with most Node images.
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      # A tag that disagrees with package.json publishes a version nobody asked
+      # for, and npm has no undo past 72 hours. Fail before that happens.
+      - name: Check the tag matches package.json
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          packaged="$(node -p "require('./package.json').version")"
+          if [ "$tagged" != "$packaged" ]; then
+            echo "tag v$tagged does not match package.json $packaged" >&2
+            exit 1
+          fi
+
+      - run: pnpm verify
+
+      # `npm publish`, not `pnpm publish`: pnpm 11's OIDC handling is still
+      # unreliable (pnpm/pnpm#11513). pnpm builds, npm ships.
+      - run: npm publish --provenance --access public
+
+      - run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -38,6 +38,9 @@
   "sideEffects": [
     "*.css"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
     "dev": "vite build --watch",
@@ -45,6 +48,9 @@
     "test:watch": "vitest",
     "types": "vue-tsc --noEmit -p tsconfig.json",
     "example": "vite --config example/vite.config.ts",
+    "verify": "pnpm types && pnpm test && pnpm build",
+    "preversion": "pnpm verify",
+    "postversion": "git push --follow-tags",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
