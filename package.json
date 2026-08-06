@@ -16,7 +16,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jcalixte/atproto-login.git"
+    "url": "git+https://github.com/jcalixte/vue-atproto-login.git"
+  },
+  "homepage": "https://github.com/jcalixte/vue-atproto-login#readme",
+  "bugs": {
+    "url": "https://github.com/jcalixte/vue-atproto-login/issues"
   },
   "files": [
     "dist"
