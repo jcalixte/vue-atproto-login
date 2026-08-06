@@ -1,0 +1,65 @@
+{
+  "name": "vue-atproto-login",
+  "version": "0.1.0",
+  "description": "atproto / Bluesky OAuth sign-in for Vue 3 — a composable, a component and a handle typeahead.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Julien Calixte",
+  "keywords": [
+    "vue",
+    "vue3",
+    "atproto",
+    "bluesky",
+    "oauth",
+    "login",
+    "authentication"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcalixte/atproto-login.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/vue-atproto-login.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-atproto-login.js"
+    },
+    "./style.css": "./dist/vue-atproto-login.css",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "types": "vue-tsc --noEmit -p tsconfig.json",
+    "example": "vite --config example/vite.config.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "@atproto/oauth-client-browser": ">=0.3.40 <0.6.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@atproto/oauth-client-browser": "^0.5.3",
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.4.11",
+    "@vue/tsconfig": "^0.9.1",
+    "jsdom": "^29.1.1",
+    "typescript": "~5.9.3",
+    "vite": "^8.2.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.10",
+    "vue": "^3.5.40",
+    "vue-tsc": "^3.3.8"
+  },
+  "packageManager": "pnpm@11.20.0"
+}
