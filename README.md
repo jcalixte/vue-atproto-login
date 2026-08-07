@@ -102,7 +102,7 @@ configureAtprotoLogin({
   dev: import.meta.env.DEV,          // default: hostname is localhost / 127.0.0.1 / [::1]
 
   scope: "atproto transition:generic",
-  handleResolver: "https://bsky.social",
+  handleResolver: "https://slingshot.microcosm.blue",
 
   storage: localStorageSession(),     // or your own; every method may return a promise
   resolveProfile: bskyProfileResolver(),
@@ -136,6 +136,16 @@ quietly missing it.
 
 Both memoize per DID and never cache a failure. An app that is not a Bluesky client and
 would rather not add one as a third party can use slingshot alone and go without the avatar.
+
+`handleResolver` is a separate hop: it turns the typed handle into a DID once, before the
+OAuth redirect, and it defaults to `https://slingshot.microcosm.blue` — an edge cache for
+that exact call, returning only bi-directionally verified handle/DID pairs. Any PDS serves
+`com.atproto.identity.resolveHandle` too, so `handleResolver: "https://bsky.social"` is the
+one-line way back to the pre-0.3 behaviour.
+
+Slingshot has no typeahead endpoint, so `searchActors` still defaults to the appview. A
+login box that must talk to nothing but slingshot can pass `searchActors: async () => []`,
+which leaves the field behaving as plain text input.
 
 ### Storage
 

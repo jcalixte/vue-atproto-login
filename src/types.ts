@@ -88,7 +88,13 @@ export interface AtprotoLoginOptions {
   /** OAuth scope. Writing records needs `transition:generic` on top of `atproto`. */
   scope?: string
 
-  /** Handle-to-DID resolver service. Default `https://bsky.social`. */
+  /**
+   * Handle-to-DID resolver service, used once per sign-in before the OAuth
+   * redirect. Must serve `com.atproto.identity.resolveHandle`.
+   *
+   * Default `https://slingshot.microcosm.blue`. Any PDS works too —
+   * `https://bsky.social` was the previous default.
+   */
   handleResolver?: string
 
   /** Local identity cache. Default: `localStorageSession()`. */

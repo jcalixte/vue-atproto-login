@@ -1,9 +1,20 @@
 import { bskyProfileResolver, bskySearchActors } from "./resolvers/bsky"
+import { SLINGSHOT_BASE_URL } from "./resolvers/slingshot"
 import { localStorageSession } from "./storage"
 import type { AtprotoLoginOptions, ResolvedOptions } from "./types"
 
 export const DEFAULT_SCOPE = "atproto transition:generic"
-export const DEFAULT_HANDLE_RESOLVER = "https://bsky.social"
+
+/**
+ * Where a typed handle becomes a DID, before any OAuth request is made.
+ *
+ * Slingshot rather than `bsky.social`: it is an edge cache built for exactly
+ * this call, it returns only bi-directionally verified handle/DID pairs, and it
+ * keeps sign-in off a Bluesky PDS for apps that are not Bluesky clients. Point
+ * `handleResolver` at your own service — or back at `https://bsky.social` — if
+ * you would rather not depend on it.
+ */
+export const DEFAULT_HANDLE_RESOLVER = SLINGSHOT_BASE_URL
 
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1", ""])
 
