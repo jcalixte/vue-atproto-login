@@ -244,7 +244,7 @@ daisyUI treatment skips `style.css` entirely and passes its own classes:
 ```
 
 No CSS from this package is loaded, so there is nothing to override and no specificity
-fight. Two things worth knowing:
+fight. Three things worth knowing:
 
 - Write the class names **literally in your own template**. Tailwind finds classes by
   scanning source files, and it does not scan `node_modules` by default — a string built at
@@ -252,6 +252,10 @@ fight. Two things worth knowing:
 - Attributes fall through to the right element. `<AtprotoLogin class="…">` lands on the
   wrapper; `<AtprotoHandleInput class="join-item" required>` lands on the `<input>` itself,
   even though that component renders the input and its listbox as siblings.
+- `<style scoped>` in your component reaches both. Around `<AtprotoLogin>` it needs
+  `:deep(.your-class)`, since the scope attribute lands on the wrapper; around
+  `<AtprotoHandleInput>` the input, listbox and rows carry it directly, so plain
+  `.your-class` matches. Either way, name the elements through `:ui` and style those names.
 
 Mixing is fine too: keep `style.css` and override only the hooks you care about. An
 overridden hook loses its default rule (they are scoped to the default names), while

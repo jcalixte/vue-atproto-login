@@ -1,5 +1,15 @@
+<script lang="ts">
+// Ids are document-global, so two boxes on one page — a header and a modal, say —
+// would otherwise both answer to `atp-handle-suggestions`, and aria-activedescendant
+// on one would resolve into the other one's list. Module scope, not setup scope:
+// `<script setup>` runs once per instance and would hand every box the same number.
+// Browser-only component, so a counter is enough — there is no server render to
+// agree with.
+let boxes = 0
+</script>
+
 <script setup lang="ts">
-import { onUnmounted, ref } from "vue"
+import { getCurrentInstance, onUnmounted, ref } from "vue"
 
 import { getOptions, isConfigured } from "../config"
 import type { ActorSearch, ActorSuggestion } from "../types"
@@ -18,6 +28,18 @@ import { type AtprotoLoginUi, resolveUi } from "./ui"
 // warning instead. Attributes belong on the input, so route them there by hand:
 // `<AtprotoHandleInput class="join-item" required>` then behaves as written.
 defineOptions({ inheritAttrs: false })
+
+// Vue applies a parent's scoped-style attribute to a child's *root element*, and
+// a fragment has none — so `<style scoped>` around an <AtprotoHandleInput> styles
+// nothing at all, while the same rules reach the whole tree through <AtprotoLogin>
+// (single root div). The attribute never passes through $attrs; it lives on our
+// own vnode. Apply it by hand so both components style the same way.
+const hostScopeId = getCurrentInstance()?.vnode.scopeId
+const scopeAttrs = hostScopeId ? { [hostScopeId]: "" } : {}
+
+const uid = ++boxes
+const listboxId = `atp-handle-suggestions-${uid}`
+const optionId = (index: number) => `atp-suggestion-${uid}-${index}`
 
 const props = withDefaults(
   defineProps<{
@@ -152,16 +174,16 @@ defineExpose({ submit: onSubmit, close })
 
 <template>
   <input
-    v-bind="$attrs"
+    v-bind="{ ...scopeAttrs, ...$attrs }"
     :value="modelValue"
     :class="classes().input"
     type="text"
     role="combobox"
     :aria-label="ariaLabel"
     aria-autocomplete="list"
-    aria-controls="atp-handle-suggestions"
+    :aria-controls="listboxId"
     :aria-expanded="open"
-    :aria-activedescendant="activeIndex >= 0 ? `atp-suggestion-${activeIndex}` : undefined"
+    :aria-activedescendant="activeIndex >= 0 ? optionId(activeIndex) : undefined"
     autocapitalize="none"
     autocorrect="off"
     autocomplete="off"
@@ -178,14 +200,16 @@ defineExpose({ submit: onSubmit, close })
 
   <ul
     v-if="open"
-    id="atp-handle-suggestions"
+    v-bind="scopeAttrs"
+    :id="listboxId"
     :class="classes().suggestions"
     role="listbox"
     aria-label="Matching handles"
   >
     <li
       v-for="(suggestion, index) in found"
-      :id="`atp-suggestion-${index}`"
+      v-bind="scopeAttrs"
+      :id="optionId(index)"
       :key="suggestion.did"
       :class="[classes().suggestion, index === activeIndex && classes().suggestionActive]"
       role="option"
