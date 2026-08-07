@@ -62,10 +62,34 @@ jobs:
 
       - run: pnpm verify
 
+      # A re-run against an already-published tag (npm has no undo, so tags get
+      # re-dispatched by hand) must not hard-fail. Ask the registry whether this
+      # exact name@version already exists and skip publishing if it does.
+      - name: Check whether this version is already on npm
+        id: published
+        run: |
+          name="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "already published $name@$version, skipping npm publish"
+            echo "exists=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >>"$GITHUB_OUTPUT"
+          fi
+
       # `npm publish`, not `pnpm publish`: pnpm 11's OIDC handling is still
       # unreliable (pnpm/pnpm#11513). pnpm builds, npm ships.
-      - run: npm publish --provenance --access public
+      - if: steps.published.outputs.exists != 'true'
+        run: npm publish --provenance --access public
 
-      - run: gh release create "$TAG" --generate-notes --verify-tag
+      # `create` fails if the release already exists, which is normal on a
+      # re-run. Create only when missing so the job stays idempotent.
+      - name: Create the GitHub Release if missing
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists, skipping"
+          else
+            gh release create "$TAG" --generate-notes --verify-tag
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
