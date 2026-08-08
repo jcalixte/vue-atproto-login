@@ -262,7 +262,6 @@ describe("revocation while the tab is open", () => {
     await settle()
     expect(isLoggedIn.value).toBe(true)
 
-    // The SDK reports the deletion through the load-time callback.
     const { onSessionDeleted } = load.mock.calls[0][0] as {
       onSessionDeleted: (sub: string) => void
     }

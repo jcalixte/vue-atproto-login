@@ -77,11 +77,6 @@ const stripCallback = async () => {
   if (url.search !== before) window.history.replaceState(null, "", url)
 }
 
-/**
- * The grant died while the tab was open — revoked from another device, or its
- * refresh token expired. Drop the cached identity so the UI stops offering
- * writes it can no longer perform.
- */
 const watchForRevocation = () => {
   const { storage } = getOptions()
   onSessionDeleted((sub) => {
@@ -91,7 +86,6 @@ const watchForRevocation = () => {
   })
 }
 
-/** Handle carried in from a cross-app link: prefill, strip, then sign in. */
 const autoSignIn = async () => {
   const { autoSignInFromQuery, onError } = getOptions()
   if (!autoSignInFromQuery || did.value) return
@@ -141,8 +135,7 @@ const initialize = async () => {
 
     if (stored?.did) {
       // The client resolved with no session: the stored grant is gone, revoked
-      // or expired past refresh. Drop the cached identity so the UI does not
-      // offer PDS writes against a dead session.
+      // or expired past refresh.
       await storage.clear()
       clearIdentity()
     }
@@ -156,8 +149,7 @@ const initialize = async () => {
 }
 
 /**
- * Kick off the OAuth client and consume any pending callback. Idempotent: the
- * work happens once per page load however many components call it.
+ * Kick off the OAuth client and consume any pending callback. Idempotent.
  *
  * `useAtprotoLogin()` calls this for you; call it directly from `main.ts` only
  * if you want the redirect handled before the first component mounts.
@@ -175,16 +167,15 @@ export interface UseAtprotoLogin {
   avatar: Readonly<Ref<string | null>>
   /** The account's PDS endpoint, if the profile resolver reports one. */
   pds: Readonly<Ref<string | null>>
-  /** Writable: seeds the sign-in input, e.g. from an inbound `?handle=`. */
+  /** Seeds the sign-in input, e.g. from an inbound `?handle=`. */
   prefillHandle: Ref<string>
   /** False until the OAuth client has answered — render a skeleton, not "Sign in". */
   isReady: ComputedRef<boolean>
   isLoggedIn: ComputedRef<boolean>
   /** Redirects the page to the user's PDS. On success it does not return. */
   signIn: (handle: string, options?: { signal?: AbortSignal }) => Promise<void>
-  /** Revokes the grant at the PDS and clears the local identity. */
+  /** Revokes the grant at the PDS, so the user is signed out everywhere. */
   signOut: () => Promise<void>
-  /** Re-resolve handle and avatar for the signed-in DID. */
   refresh: () => Promise<void>
   /** The live `OAuthSession` for writing to the signed-in user's repo. */
   getSession: () => Promise<OAuthSession | null>
@@ -213,8 +204,7 @@ export const useAtprotoLogin = (): UseAtprotoLogin => {
       try {
         await revokeSession(did.value)
       } catch (error) {
-        // The grant may already be gone server-side. Sign out locally regardless
-        // — refusing to would strand the user in a session they asked to leave.
+        // The grant may already be gone server-side; sign out locally regardless.
         onError(error, "revoke failed; clearing the local session anyway")
       }
     }
@@ -244,7 +234,7 @@ export const useAtprotoLogin = (): UseAtprotoLogin => {
   }
 }
 
-/** Test seam. Forgets the session state and the one-shot init guard. */
+/** Test seam. */
 export const resetAtprotoLoginState = (): void => {
   initialized = null
   did.value = null

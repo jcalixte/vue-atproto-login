@@ -5,8 +5,8 @@ export const DEFAULT_STORAGE_KEY = "atproto-session-current"
 /**
  * The default identity cache: one `localStorage` key holding `{ did, handle }`.
  *
- * Reads are defensive because a half-written or hand-edited value should read as
- * "signed out", not throw during app boot.
+ * A half-written or hand-edited value must read as "signed out" rather than
+ * throw during app boot, so reads swallow everything.
  */
 export const localStorageSession = (key = DEFAULT_STORAGE_KEY): SessionStorage => ({
   load() {
@@ -30,12 +30,12 @@ export const localStorageSession = (key = DEFAULT_STORAGE_KEY): SessionStorage =
     try {
       localStorage.removeItem(key)
     } catch {
-      // Same.
+      // Private mode, or a full quota.
     }
   },
 })
 
-/** No persistence at all — useful in tests, and for SSR-ish environments. */
+/** No persistence at all — for tests and SSR-ish environments. */
 export const memoryStorageSession = (): SessionStorage => {
   let current: CachedSession | null = null
   return {

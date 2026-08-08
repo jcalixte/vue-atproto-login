@@ -28,7 +28,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      # One name for the tag whichever way the job was started.
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v5

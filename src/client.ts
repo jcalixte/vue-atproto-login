@@ -11,8 +11,7 @@ const sessionDeletedListeners = new Set<SessionDeletedListener>()
 
 /**
  * Fires when a grant dies underneath us — revoked from another device, or its
- * refresh token expired. The composable uses it to drop the cached identity so
- * the UI stops offering writes it can no longer perform.
+ * refresh token expired.
  *
  * Where this comes from depends on the SDK version: `@atproto/oauth-client` 0.4+
  * takes an `onSessionDeleted` option at load time, while 0.3 emitted a `deleted`
@@ -29,16 +28,14 @@ const notifySessionDeleted = (sub: string) => {
 }
 
 /**
- * The `client_id` for the current environment.
+ * In production the `client_id` *is* the URL of the hosted
+ * `client-metadata.json`.
  *
- * In production this is simply the URL of your hosted `client-metadata.json` —
- * in atproto OAuth the id *is* the metadata document.
- *
- * In development there is no such URL, so we build a loopback id, and append the
+ * In development there is no such URL, so we build a loopback id and append the
  * scope to it. `buildLoopbackClientId` only fills in `redirect_uri`; its implied
- * scope is a bare `atproto`, which authorizes no repo writes. Without this,
- * `pnpm dev` can read but every `putRecord` fails with an authorization error
- * that looks like a bug in your own code.
+ * scope is a bare `atproto`, which authorizes no repo writes. Without the
+ * append, `pnpm dev` can read but every `putRecord` fails with an authorization
+ * error.
  */
 export const resolveClientId = (): string => {
   const { clientId, devClientId, dev, scope } = getOptions()
@@ -48,7 +45,6 @@ export const resolveClientId = (): string => {
   return `${loopback}&scope=${encodeURIComponent(scope)}`
 }
 
-/** The one `BrowserOAuthClient` for this origin, loaded lazily and memoized. */
 export const getOAuthClient = (): Promise<BrowserOAuthClient> => {
   if (!clientPromise) {
     const { handleResolver } = getOptions()
@@ -79,8 +75,7 @@ export const signInWithHandle = async (
 }
 
 /**
- * Consume the `?code=&state=` the PDS redirected back with, and hand back the
- * session it created. Returns `null` when there is no session to restore.
+ * Consume the `?code=&state=` the PDS redirected back with.
  *
  * `init()` must run exactly once per page load, which is why this lives behind
  * the composable's one-shot initializer rather than being called from a view.
@@ -99,8 +94,7 @@ export const revokeSession = async (sub: string): Promise<void> => {
 
 /**
  * Re-derive the live OAuth session for a DID — the object you pass to
- * `new Agent(session)` from `@atproto/api`, or use as a `fetch` handler, to
- * write to that user's repo.
+ * `new Agent(session)` from `@atproto/api`, or use as a `fetch` handler.
  *
  * `init()` hands the session back only once, on the redirect that created it,
  * so anything writing to the PDS later restores it from storage by DID instead.
@@ -115,7 +109,7 @@ export const getActiveSession = async (did: string): Promise<OAuthSession | null
   }
 }
 
-/** Test seam. Forgets the memoized client so the next call reloads it. */
+/** Test seam. */
 export const resetOAuthClient = (): void => {
   clientPromise = null
   sessionDeletedListeners.clear()

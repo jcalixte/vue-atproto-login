@@ -1,10 +1,9 @@
 <script lang="ts">
-// Ids are document-global, so two boxes on one page — a header and a modal, say —
-// would otherwise both answer to `atp-handle-suggestions`, and aria-activedescendant
-// on one would resolve into the other one's list. Module scope, not setup scope:
-// `<script setup>` runs once per instance and would hand every box the same number.
-// Browser-only component, so a counter is enough — there is no server render to
-// agree with.
+// Ids are document-global, so two boxes on one page would otherwise both answer
+// to `atp-handle-suggestions`, and aria-activedescendant on one would resolve
+// into the other one's list. Module scope, not setup scope: `<script setup>`
+// runs once per instance and would hand every box the same number. Browser-only
+// component, so a counter is enough — there is no server render to agree with.
 let boxes = 0
 </script>
 
@@ -15,25 +14,15 @@ import { getOptions, isConfigured } from "../config"
 import type { ActorSearch, ActorSuggestion } from "../types"
 import { type AtprotoLoginUi, resolveUi } from "./ui"
 
-/**
- * A handle box with a typeahead over the public appview.
- *
- * Typing your own handle from memory is fine, but there is no way to discover
- * the exact spelling of one you half-remember. The list is a shortcut, never a
- * gate: a free-typed handle the appview has never indexed still submits.
- */
-
 // The suggestion list is a sibling of the input, so this renders a fragment and
 // Vue cannot pick a root to inherit attributes onto — it drops them with a
-// warning instead. Attributes belong on the input, so route them there by hand:
-// `<AtprotoHandleInput class="join-item" required>` then behaves as written.
+// warning instead. Route them to the input by hand.
 defineOptions({ inheritAttrs: false })
 
 // Vue applies a parent's scoped-style attribute to a child's *root element*, and
 // a fragment has none — so `<style scoped>` around an <AtprotoHandleInput> styles
-// nothing at all, while the same rules reach the whole tree through <AtprotoLogin>
-// (single root div). The attribute never passes through $attrs; it lives on our
-// own vnode. Apply it by hand so both components style the same way.
+// nothing at all, not even through `:deep()`. The attribute never passes through
+// $attrs; it lives on our own vnode. Apply it by hand.
 const hostScopeId = getCurrentInstance()?.vnode.scopeId
 const scopeAttrs = hostScopeId ? { [hostScopeId]: "" } : {}
 
@@ -141,7 +130,8 @@ const pick = (suggestion: ActorSuggestion) => {
 }
 
 // Enter with a row highlighted takes that row; with none it takes what is typed,
-// so a handle the appview has never indexed is still reachable.
+// so a handle the appview has never indexed is still reachable — the list is a
+// shortcut, not a gate.
 const onSubmit = () => {
   const highlighted = open.value ? found.value[activeIndex.value] : undefined
   if (highlighted) {

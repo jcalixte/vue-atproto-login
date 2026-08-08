@@ -8,8 +8,6 @@ const { did, handle, avatar, pds, isReady, isLoggedIn, getSession, refresh } = u
 const lastError = ref("")
 const sessionProbe = ref("")
 
-// What sign-in is actually *for*: a live session bound to this user's repo.
-// Everything above the fold is identity; this is the door it opens.
 const probeSession = async () => {
   sessionProbe.value = "…"
   const session = await getSession()

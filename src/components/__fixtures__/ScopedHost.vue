@@ -4,10 +4,8 @@ import AtprotoLogin from "../AtprotoLogin.vue"
 </script>
 
 <!--
-  A consumer with `<style scoped>`, which is how an app styles a library
-  component's internals. Vue only writes the scope attribute below onto elements
-  it considers roots, so this fixture exists to pin down which ones actually get
-  it — see AtprotoHandleInput.spec.ts.
+  A consumer with `<style scoped>`. Vue only writes the scope attribute onto
+  elements it considers roots — see AtprotoHandleInput.spec.ts.
 -->
 <template>
   <div class="host">

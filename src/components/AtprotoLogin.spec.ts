@@ -145,10 +145,8 @@ describe("<AtprotoLogin>", () => {
     })
     await flushPromises()
 
-    // Overridden hooks carry only the app's classes…
     expect(wrapper.find(".badge").classes()).toEqual(["badge", "badge-ghost"])
     expect(wrapper.find(".atp-handle").exists()).toBe(false)
-    // …while the ones left alone keep the built-in styling.
     expect(wrapper.find(".atp-sign-out").exists()).toBe(true)
   })
 
@@ -160,7 +158,6 @@ describe("<AtprotoLogin>", () => {
     await typeAndDebounce(wrapper, "bo")
 
     // ids stay — they wire the combobox to its listbox for screen readers.
-    // No class anywhere should carry a default hook.
     const classed = wrapper.findAll("[class]").flatMap((el) => el.classes())
     expect(classed.filter((name) => name.startsWith("atp-"))).toEqual([])
   })

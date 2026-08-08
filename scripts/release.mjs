@@ -32,10 +32,6 @@ if (!BUMPS.has(bump) && !/^\d+\.\d+\.\d+/.test(bump)) {
   die(`Unknown bump "${bump}". Use patch / minor / major, or an explicit version.`)
 }
 
-// --- preconditions -------------------------------------------------------
-// Each of these is something that silently produces a broken release if it is
-// wrong, and is invisible until much later.
-
 const branch = run("git", ["rev-parse", "--abbrev-ref", "HEAD"])
 if (branch !== "main") die(`On "${branch}". Releases are cut from main.`)
 
@@ -54,10 +50,8 @@ try {
   die("gh is not authenticated. The release is dispatched and watched through it.")
 }
 
-// --- bump, tag, push -----------------------------------------------------
 // `npm version` runs our own lifecycle hooks: `preversion` verifies, and
 // `postversion` pushes the commit and tag to every push URL on origin.
-
 console.log(`\n▸ ${bump} release from ${run("node", ["-p", "require('./package.json').version"])}\n`)
 runLoud("npm", ["version", bump, "-m", "chore(release): v%s"])
 
@@ -65,16 +59,14 @@ const version = run("node", ["-p", "require('./package.json').version"])
 const tag = `v${version}`
 console.log(`\n▸ tagged and pushed ${tag}\n`)
 
-// --- make sure the publish workflow is actually running ------------------
 // Tag pushes on this repository do not currently spawn runs — GitHub records
 // the PushEvent and starts nothing. So look for a run, and dispatch one only if
-// the tag push did not produce it. Checking rather than always dispatching
-// keeps this correct if push triggers start working again: no double publish.
+// the tag push did not produce it: no double publish if push triggers start
+// working again.
 //
 // A push-triggered run reports the tag as its headBranch; a dispatched one
 // reports main. So the two cases are found differently: by tag before
 // dispatching, by "an id we had not seen" after.
-
 const listRuns = () =>
   JSON.parse(
     run("gh", [
@@ -109,8 +101,6 @@ if (!found) {
   }
   if (!found) die(`Dispatched ${WORKFLOW} but no run appeared. Check: gh run list`)
 }
-
-// --- watch ---------------------------------------------------------------
 
 const id = String(found.databaseId)
 console.log(`▸ watching run ${id}\n`)

@@ -16,15 +16,13 @@ export default defineConfig({
     }),
   ],
   build: {
-    // ESM only. This is a browser OAuth client for Vue 3 apps — every consumer
-    // is a bundler, and a UMD build would only be dead weight in the tarball.
     lib: {
       entry: resolve(import.meta.dirname, "src/index.ts"),
       formats: ["es"],
       fileName: () => "vue-atproto-login.js",
     },
     rollupOptions: {
-      // Peers stay external: one Vue instance, one OAuth client per page.
+      // Peers stay external: one Vue instance and one OAuth client per page.
       external: ["vue", "@atproto/oauth-client-browser"],
       output: {
         assetFileNames: "vue-atproto-login.[ext]",

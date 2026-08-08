@@ -1,27 +1,21 @@
 import type { BrowserOAuthClient, OAuthSession } from "@atproto/oauth-client-browser"
 
 /**
- * The identity we cache locally so the UI can paint a handle before any network
- * call. This is a *hint*, not the grant: the tokens and the DPoP keypair live in
- * origin-scoped IndexedDB managed by `BrowserOAuthClient`. Clearing this cache
- * signs nobody out.
+ * A locally cached identity *hint*, not the grant: the tokens and the DPoP
+ * keypair live in origin-scoped IndexedDB managed by `BrowserOAuthClient`.
+ * Clearing this cache signs nobody out.
  */
 export interface CachedSession {
   did: string
   handle: string
 }
 
-/**
- * Where that hint is kept. The default is `localStorage`, but every method may
- * return a promise, so a PouchDB / IndexedDB / Dexie store drops in unchanged.
- */
 export interface SessionStorage {
   load(): CachedSession | null | Promise<CachedSession | null>
   save(session: CachedSession): void | Promise<void>
   clear(): void | Promise<void>
 }
 
-/** What we can learn about a DID beyond the DID itself. */
 export interface AtprotoProfile {
   did: string
   handle: string
@@ -40,7 +34,6 @@ export type ProfileResolver = (
   options?: { signal?: AbortSignal },
 ) => Promise<AtprotoProfile | null>
 
-/** One row of the handle typeahead. */
 export interface ActorSuggestion {
   did: string
   handle: string
@@ -92,8 +85,7 @@ export interface AtprotoLoginOptions {
    * Handle-to-DID resolver service, used once per sign-in before the OAuth
    * redirect. Must serve `com.atproto.identity.resolveHandle`.
    *
-   * Default `https://slingshot.microcosm.blue`. Any PDS works too —
-   * `https://bsky.social` was the previous default.
+   * Default `https://slingshot.microcosm.blue`. Any PDS works too.
    */
   handleResolver?: string
 

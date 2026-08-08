@@ -7,19 +7,14 @@ import AtprotoHandleInput from "./AtprotoHandleInput.vue"
 import BlueskyLogo from "./BlueskyLogo.vue"
 import { type AtprotoLoginUi, resolveUi } from "./ui"
 
-/**
- * The whole login in one element: a skeleton while auth resolves, the signed-in
- * identity once it has, and a handle box with typeahead when it hasn't.
- */
 const props = withDefaults(
   defineProps<{
     withSignOut?: boolean
     withAvatar?: boolean
-    /** The Bluesky butterfly on the sign-in button. */
     withLogo?: boolean
     /** Turn the typeahead off and behave as a plain text field. */
     suggestions?: boolean
-    /** How long the typeahead waits after a keystroke before it searches, in ms. */
+    /** Keystroke-to-search delay, in ms. */
     debounce?: number
     placeholder?: string
     signInLabel?: string
@@ -67,8 +62,7 @@ const classes = () => resolveUi(props.ui, props.unstyled)
 const inputHandle = ref("")
 
 // Set once the browser is on its way to the PDS. The redirect replaces the page,
-// so this only resets if signIn rejects before it can navigate — it tells "we're
-// going" apart from a stale, idle box that otherwise looks identical.
+// so this only resets if signIn rejects before it can navigate.
 const redirecting = ref(false)
 
 // A cross-app link may set the prefill after this component has mounted.
@@ -87,8 +81,7 @@ const onSubmit = async (target: string) => {
   try {
     await signIn(target)
   } catch (error) {
-    // Never made it to the PDS — let the user try again rather than sit on a
-    // dead label.
+    // Never made it to the PDS — let the user try again.
     redirecting.value = false
     emit("error", error)
   }

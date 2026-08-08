@@ -5,20 +5,10 @@ import type { AtprotoLoginOptions, ResolvedOptions } from "./types"
 
 export const DEFAULT_SCOPE = "atproto transition:generic"
 
-/**
- * Where a typed handle becomes a DID, before any OAuth request is made.
- *
- * Slingshot rather than `bsky.social`: it is an edge cache built for exactly
- * this call, it returns only bi-directionally verified handle/DID pairs, and it
- * keeps sign-in off a Bluesky PDS for apps that are not Bluesky clients. Point
- * `handleResolver` at your own service — or back at `https://bsky.social` — if
- * you would rather not depend on it.
- */
 export const DEFAULT_HANDLE_RESOLVER = SLINGSHOT_BASE_URL
 
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1", ""])
 
-/** Best-effort dev detection, used only when `options.dev` is not given. */
 export const isLoopbackHost = (): boolean => {
   if (typeof window === "undefined") return false
   return LOOPBACK_HOSTS.has(window.location.hostname)
@@ -30,9 +20,9 @@ let options: ResolvedOptions | null = null
  * Set up the login for this app. Call once, before anything renders — usually
  * right next to `createApp` in `main.ts`.
  *
- * Configuration is module-global on purpose: there is one signed-in user per
- * origin, and the OAuth client's own storage is origin-scoped too. Two configs
- * in one page would be two clients fighting over the same IndexedDB.
+ * Configuration is module-global: the OAuth client's own storage is
+ * origin-scoped, so two configs in one page would be two clients fighting over
+ * the same IndexedDB.
  */
 export const configureAtprotoLogin = (input: AtprotoLoginOptions): ResolvedOptions => {
   options = {
@@ -67,7 +57,7 @@ export const getOptions = (): ResolvedOptions => {
 
 export const isConfigured = (): boolean => options !== null
 
-/** Test seam. Drops the config *and* the memoized OAuth client. */
+/** Test seam. */
 export const resetAtprotoLogin = (): void => {
   options = null
 }

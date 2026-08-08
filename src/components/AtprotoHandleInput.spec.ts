@@ -59,8 +59,6 @@ beforeEach(() => {
 
 describe("<AtprotoHandleInput>", () => {
   it("gives each box its own listbox and option ids", async () => {
-    // A page with a header box and a modal box shares one document. Reusing the
-    // ids there points one combobox's aria-activedescendant into the other's list.
     const first = mount(AtprotoHandleInput, { props: { debounce: 0 } })
     const second = mount(AtprotoHandleInput, { props: { debounce: 0 } })
     await typeAndDebounce(first, "bo")
@@ -74,7 +72,6 @@ describe("<AtprotoHandleInput>", () => {
     expect(listboxId(first)).not.toBe(listboxId(second))
     expect(optionId(first)).not.toBe(optionId(second))
 
-    // Still wired to its own list, whatever the id turned out to be.
     expect(first.find("input").attributes("aria-controls")).toBe(listboxId(first))
   })
 
@@ -89,9 +86,6 @@ describe("<AtprotoHandleInput>", () => {
   })
 
   it("carries the consumer's scoped-style attribute onto its own listbox", async () => {
-    // Fragment root: Vue writes a parent's scope attribute onto a child's *root
-    // element*, and there is none here — so without help a consumer's `<style
-    // scoped>` reaches nothing at all, not even through `:deep()`.
     const wrapper = mount(ScopedHost, { attachTo: document.body })
     await flushPromises()
     const host = scopeAttrOf(wrapper.find(".host"))
@@ -110,9 +104,8 @@ describe("<AtprotoHandleInput>", () => {
   })
 
   it("stays reachable from the consumer when nested in <AtprotoLogin>", async () => {
-    // That component has a single root div, so Vue puts the host's attribute there
-    // and `:deep(.atp-suggestions)` from the app matches the whole subtree. Pinned
-    // here because the fragment-root fix above must not be what holds it up.
+    // Single root div there, so Vue puts the host's attribute on it directly —
+    // this must hold without the fragment-root fix above.
     const wrapper = mount(ScopedHost, { attachTo: document.body })
     await flushPromises()
 

@@ -6,7 +6,6 @@ import App from "./App.vue"
 createApp(App)
   .use(
     atprotoLoginPlugin({
-      // In production this must be the URL of a client-metadata.json you host.
       // On localhost the library builds a loopback client id instead, so this
       // value is never used by `pnpm example`.
       clientId: "https://example.com/client-metadata.json",

@@ -15,8 +15,6 @@ describe("configureAtprotoLogin defaults", () => {
   beforeEach(() => resetAtprotoLogin())
 
   it("resolves handles through slingshot", () => {
-    // The resolver is passed straight to BrowserOAuthClient, so a wrong default
-    // is only visible as a failed sign-in in production.
     expect(DEFAULT_HANDLE_RESOLVER).toBe("https://slingshot.microcosm.blue")
     expect(DEFAULT_HANDLE_RESOLVER).toBe(SLINGSHOT_BASE_URL)
     expect(configureAtprotoLogin({ clientId: CLIENT_ID }).handleResolver).toBe(
